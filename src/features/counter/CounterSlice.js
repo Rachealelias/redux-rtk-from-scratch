@@ -1,9 +1,19 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { fetchRandomDogImage } from "../CounterApi";
 
 const initialState = {
     value: 0,
-    status: 'idle'
+    status: 'idle',
+    image: null
 }
+
+export const fetchRandomDogImageAsync = createAsyncThunk(
+    'counter/fetchRandomDogImage',
+    async () => {
+        const response = await fetchRandomDogImage()
+        return response
+    }
+)
 
 export const counterSlice = createSlice({
     name: 'counter',
@@ -13,6 +23,20 @@ export const counterSlice = createSlice({
         decrement: state => {state.value--},
         reset: state => {state.value = 0},
         incrementByAmount: (state, action) => {state.value += action.payload},
+    },
+    extraReducers: (builder) => {
+        builder
+        .addCase(fetchRandomDogImageAsync.pending, (state) =>{
+            state.status = 'loading'
+        })
+        .addCase(fetchRandomDogImageAsync.fulfilled, (state, action) =>{
+            state.image= action.payload
+            state.status = 'idle'
+
+        })
+        .addCase(fetchRandomDogImageAsync.rejected, (state) =>{
+            state.status = 'rejected'
+        })
     }
 })
 export default counterSlice.reducer
